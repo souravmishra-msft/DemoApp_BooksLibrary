@@ -3,8 +3,7 @@ const passport = require('passport');
 const BearerStrategy = require('passport-azure-ad').BearerStrategy;
 
 const authConfig = require('../config/authConfig.json');
-const booksController = require('../controllers/books-controller');
-
+const wishlistController = require('../controllers/wishlist-controller');
 
 // -------------------------------------------------------
 // Preparing for BearerStrategy
@@ -26,14 +25,9 @@ const bearerStrategy = new BearerStrategy(options, (token, done) => {
 // console.log(bearerStrategy);
 passport.use(bearerStrategy);
 
-router.get('/listBooks', passport.authenticate("oauth-bearer", { session: false }), booksController.listBooks);
-router.get('/listSellerBooks', passport.authenticate("oauth-bearer", { session: false }), booksController.listSellerBooks);
-router.post('/addBook', passport.authenticate("oauth-bearer", { session: false }), booksController.addBook);
-router.get('/getBook/:id', passport.authenticate("oauth-bearer", { session: false }), booksController.getBook);
-router.put('/updateBook', passport.authenticate("oauth-bearer", { session: false }), booksController.sellerUpdateBook);
-router.delete('/sellerDeleteBook', passport.authenticate("oauth-bearer", { session: false }), booksController.sellerDeleteBook);
-
-
+router.get('/getWishList', passport.authenticate("oauth-bearer", { session: false }), wishlistController.getWishlistItems);
+router.post('/addToWishList', passport.authenticate("oauth-bearer", { session: false }), wishlistController.addToWishlist);
+router.delete('/deleteFromWishList', passport.authenticate("oauth-bearer", { session: false }), wishlistController.deleteWishlistItem);
 
 
 module.exports = router;

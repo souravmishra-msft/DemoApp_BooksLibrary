@@ -41,9 +41,18 @@ const BookSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
-    available: {
-        type: Boolean,
-        // required: true
+    seller_id: {
+        type: String,
+        required: true
+    },
+    seller_username: {
+        type: String,
+        required: true
+    },
+    available_quantity: {
+        type: Number,
+        required: true,
+        default: 0
     },
 }, { timestamps: true, collection: 'Books' });
 

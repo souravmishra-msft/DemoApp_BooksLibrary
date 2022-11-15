@@ -9,6 +9,7 @@ dotenv.config({ path: './config/main.env' });
 
 // Include routes
 const bookRoutes = require('./routes/book-routes');
+const wishlistRoutes = require('./routes/wishlist-routes');
 
 // ----------------------------------------------------
 // Configure the Express App. Include the middlewares
@@ -36,6 +37,7 @@ app.use(cors());
 
 // Routes
 app.use('/api/v1/books', bookRoutes);
+app.use('/api/v1/wishlist', wishlistRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);

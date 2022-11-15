@@ -10,7 +10,7 @@ const listBooks = async (req, res) => {
     let books;
     try {
         if (appRoles) {
-            if (((appRoles[0] == "buyer") || (appRoles[0] == "seller") || (appRoles[0] == "admin")) && (scopeArr.find(el => el === "Books.ListAllBooks"))) {
+            if (((appRoles[0] == "buyer") || (appRoles[0] == "admin")) && (scopeArr.find(el => el === "Books.ListAllBooks"))) {
                 books = await Book.find();
                 if (!books || (books.length == 0)) {
                     return res.status(404).json({
@@ -44,40 +44,25 @@ const listBooks = async (req, res) => {
     }
 }
 
-const addBook = async (req, res) => {
+const listSellerBooks = async (req, res) => {
     let scp = req.authInfo["scp"];
     let scopeArr = scp.split(" ").filter(Boolean);
     let appRoles = req.authInfo.roles;
-    const { isbn, title, image, description, published, publisher, author, genre, language, price, available } = req.body;
-    let book;
+    let sellerId = req.authInfo.oid;
+    let books;
     try {
-        if (((appRoles[0] == "seller") || (appRoles[0] == "admin")) && (scopeArr.find(el => el === "Books.AddNewBook"))) {
-            book = new Book({
-                isbn,
-                title,
-                image,
-                author,
-                description,
-                published,
-                publisher,
-                genre,
-                language,
-                price,
-                available
-            });
-
-            await book.save();
-
-            if (!book || (book == 0)) {
-                return res.status(500).json({
+        if (((appRoles[0] == "seller") || (appRoles[0] == "admin")) && (scopeArr.find(el => el === "Books.ReadMyBooks"))) {
+            books = await Book.find({ seller_Id: sellerId });
+            if (!books || (books.length == 0)) {
+                return res.status(404).json({
                     status: 'failure',
-                    message: 'Unable to add the book.'
+                    message: 'No books found.'
                 });
             } else {
                 return res.status(200).json({
                     status: 'success',
-                    message: 'added successfully.',
-                    book
+                    books_count: books.length,
+                    books
                 });
             }
         } else {
@@ -128,11 +113,67 @@ const getBook = async (req, res) => {
     }
 }
 
-const updateBook = async (req, res) => {
+
+
+const addBook = async (req, res) => {
     let scp = req.authInfo["scp"];
     let scopeArr = scp.split(" ").filter(Boolean);
     let appRoles = req.authInfo.roles;
-    const id = req.params.id;
+    let sellerId = req.authInfo.oid;
+    let username = req.authInfo.preferred_username;
+    const { isbn, title, image, description, published, publisher, author, genre, language, price, available_quantity } = req.body;
+    let book;
+    try {
+        if (((appRoles[0] == "seller") || (appRoles[0] == "admin")) && (scopeArr.find(el => el === "Books.AddNewBook"))) {
+            book = new Book({
+                isbn,
+                title,
+                image,
+                author,
+                description,
+                published,
+                publisher,
+                genre,
+                language,
+                price,
+                seller_id: sellerId,
+                seller_username: username,
+                available_quantity,
+            });
+
+            await book.save();
+
+            if (!book || (book == 0)) {
+                return res.status(500).json({
+                    status: 'failure',
+                    message: 'Unable to add the book.'
+                });
+            } else {
+                return res.status(200).json({
+                    status: 'success',
+                    message: 'added successfully.',
+                    book
+                });
+            }
+        } else {
+            res.status(401).json({
+                status: 401,
+                message: "Unauthorized",
+            });
+        }
+    } catch (error) {
+        res.status(500).json({
+            status: 500,
+            message: error.message,
+        });
+    }
+}
+
+const sellerUpdateBook = async (req, res) => {
+    let scp = req.authInfo["scp"];
+    let scopeArr = scp.split(" ").filter(Boolean);
+    let appRoles = req.authInfo.roles;
+    const id = req.body.id;
     const { isbn, title, image, description, published, publisher, author, genre, language, price, available } = req.body;
     let book;
     try {
@@ -178,11 +219,11 @@ const updateBook = async (req, res) => {
     }
 }
 
-const deleteBook = async (req, res) => {
+const sellerDeleteBook = async (req, res) => {
     let scp = req.authInfo["scp"];
     let scopeArr = scp.split(" ").filter(Boolean);
     let appRoles = req.authInfo.roles;
-    const id = req.params.id;
+    const id = req.body.id;
     let book;
     try {
         if (((appRoles[0] == "seller") || (appRoles[0] == "admin")) && (scopeArr.find(el => el === "Books.UpdateBookDetails"))) {
@@ -213,7 +254,8 @@ const deleteBook = async (req, res) => {
 }
 
 exports.listBooks = listBooks;
+exports.listSellerBooks = listSellerBooks;
 exports.getBook = getBook;
 exports.addBook = addBook;
-exports.updateBook = updateBook;
-exports.deleteBook = deleteBook;
+exports.sellerUpdateBook = sellerUpdateBook;
+exports.sellerDeleteBook = sellerDeleteBook;
